@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+@theme {
+  --color-felt: #1d5a40;
+  --color-felt-light: #24704f;
+  --color-felt-dark: #10372a;
+  --color-night: #0b241b;
+  --color-gold: #f4c24d;
+  --color-card: #fdfcf8;
+  --color-suit-red: #c8283c;
+  --color-suit-black: #1b1f2a;
+  --font-sans: var(--font-georgian), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+html,
+body {
+  height: 100%;
+  background: var(--color-night);
+  color: #f1f5f2;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  overscroll-behavior: none;
+}
+
+button {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+
+.felt {
+  background:
+    radial-gradient(ellipse at center, var(--color-felt-light) 0%, var(--color-felt) 55%, var(--color-felt-dark) 100%);
+}
+
+.card-back {
+  background-color: #2b3f8f;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.12) 0 2px, transparent 2px 7px),
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.12) 0 2px, transparent 2px 7px);
+}
+
+@keyframes deal-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-deal {
+  animation: deal-in 180ms ease-out both;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-toast {
+  animation: toast-in 200ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-deal,
+  .animate-toast {
+    animation: none;
+  }
+}

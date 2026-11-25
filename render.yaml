@@ -1,0 +1,17 @@
+# Render Blueprint for the Socket.IO game server (free plan).
+# Render dashboard → New → Blueprint → pick this repo.
+services:
+  - type: web
+    name: joker-server
+    runtime: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start -w server
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Set to the Vercel URL of the website, e.g. https://joker-xyz.vercel.app
+      - key: CLIENT_ORIGIN
+        sync: false
