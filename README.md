@@ -99,7 +99,7 @@ Actions: `{ type: 'chooseTrump', suit }`, `{ type: 'bid', bid }`, `{ type: 'play
 The web app and the game server deploy separately.
 
 Live setup (free plans):
-- **Website:** https://joker-sage.vercel.app (Vercel, root directory `web`, `NEXT_PUBLIC_SERVER_URL` set)
+- **Website:** https://jokozoko.vercel.app (Vercel, root directory `web`, `NEXT_PUBLIC_SERVER_URL` set)
 - **Game server:** https://joker-server.onrender.com (Render, from [`render.yaml`](render.yaml))
 
 Both redeploy automatically on every push to `main`. Render's free server sleeps after
