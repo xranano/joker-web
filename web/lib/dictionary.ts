@@ -85,6 +85,14 @@ export const DICT = {
   dealer: { en: 'Dealer', ka: 'დამრიგებელი' },
   handDone: { en: 'Hand {n}: you scored {p}', ka: 'ხელი {n}: შენ მიიღე {p}' },
   wonTrick: { en: '{name} takes it', ka: '{name} წაიღო' },
+  led: { en: 'Led', ka: 'ატარა' },
+  leads: { en: '{name} leads', ka: '{name} ატარებს' },
+  bidsSum: { en: 'Bids {s} of {n}', ka: 'ნათქვამია {s} / {n}' },
+  toFill: { en: '{n} left to fill', ka: 'შევსებამდე: {n}' },
+  under: { en: 'Under by {n}', ka: 'შეტენვა {n}' },
+  over: { en: 'Over by {n}', ka: 'წაგლეჯვა {n}' },
+  lastTrick: { en: 'Last trick', ka: 'ბოლო ხელი' },
+  lastTrickShort: { en: 'Last', ka: 'ბოლო' },
   language: { en: 'ქართ', ka: 'ENG' },
 } as const;
 

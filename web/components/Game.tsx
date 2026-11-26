@@ -7,7 +7,9 @@ import { useI18n } from '@/lib/i18n';
 import { request } from '@/lib/socket';
 import { CardBack, CardFace, SUIT_SYMBOL, SuitIcon } from './Card';
 import { GameOver } from './GameOver';
-import { BidPanel, JokerModal, TrumpPanel } from './panels';
+import { LastTrick } from './LastTrick';
+import { BidPanel, BidStatus, JokerModal, TrumpPanel } from './panels';
+import { PulkaMini } from './PulkaMini';
 import { Scoresheet } from './Scoresheet';
 import { LangToggle } from './ui';
 
@@ -163,6 +165,7 @@ export function Game({ snap, clockOffset }: { snap: RoomSnapshot; clockOffset: n
   const [selected, setSelected] = useState<string | null>(null);
   const [jokerCard, setJokerCard] = useState<string | null>(null);
   const [scoresOpen, setScoresOpen] = useState(false);
+  const [lastOpen, setLastOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const now = useNow(snap.turnDeadline !== null);
 
@@ -241,24 +244,35 @@ export function Game({ snap, clockOffset }: { snap: RoomSnapshot; clockOffset: n
   let centerText: string | null = null;
   if (game.phase === 'trump' && !myTurn) centerText = t('choosingTrump', { name: turnName });
   else if (game.phase === 'bidding' && !myTurn) centerText = t('waitingFor', { name: turnName });
-  else if (game.phase === 'playing' && trick.plays.length === 0) centerText = myTurn ? t('yourTurn') : t('waitingFor', { name: turnName });
+  else if (game.phase === 'playing' && trick.plays.length === 0) centerText = myTurn ? t('yourTurn') : t('leads', { name: turnName });
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
       {/* top bar */}
       <header className="flex items-center gap-2 px-3 py-2">
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold">
+          <p className="whitespace-nowrap text-sm font-semibold">
             <span className="hidden sm:inline">{t('hand')} </span>
             {Math.min(game.handIndex + 1, game.schedule.length)}/{game.schedule.length}
             <span className="font-normal text-white/60">
               {' '}
-              · {game.handSize} {t('cards')}
+              · {game.handSize}
+              <span className="hidden min-[400px]:inline"> {t('cards')}</span>
             </span>
           </p>
           <p className="hidden font-mono text-[11px] tracking-widest text-white/40 sm:block">{snap.code}</p>
         </div>
         <TrumpBadge game={game} />
+        {game.lastTrick && (
+          <button
+            onClick={() => setLastOpen(true)}
+            title={t('lastTrick')}
+            className="shrink-0 rounded-lg bg-white/10 px-2 py-1.5 text-xs font-semibold hover:bg-white/15"
+          >
+            <span className="sm:hidden">{t('lastTrickShort')}</span>
+            <span className="hidden sm:inline">{t('lastTrick')}</span>
+          </button>
+        )}
         <button
           onClick={() => setScoresOpen(true)}
           className="rounded-lg bg-white/10 px-2.5 py-1.5 text-xs font-semibold hover:bg-white/15"
@@ -273,17 +287,26 @@ export function Game({ snap, clockOffset }: { snap: RoomSnapshot; clockOffset: n
 
       {/* table */}
       <section className="felt relative mx-2 min-h-0 flex-1 overflow-hidden rounded-[1.75rem] shadow-inner ring-1 ring-black/40">
+        {(game.phase === 'bidding' || game.phase === 'playing') && (
+          <BidStatus bids={game.bids} handSize={game.handSize} className="absolute left-2.5 top-2.5 z-10 max-w-[7.5rem]" />
+        )}
         {opponent(2, 'left-1/2 top-2 -translate-x-1/2')}
-        {opponent(1, 'left-1.5 top-[42%] -translate-y-1/2')}
-        {opponent(3, 'right-1.5 top-[42%] -translate-y-1/2')}
+        {opponent(1, 'left-1.5 top-[42%] -translate-y-1/2 lg:top-[55%]')}
+        {opponent(3, 'right-1.5 top-[42%] -translate-y-1/2 lg:top-[55%]')}
+        <PulkaMini game={game} mySeat={mySeat} className="absolute right-2.5 top-2.5 z-10 hidden lg:block" />
 
         <div className="absolute inset-0 grid place-items-center pt-6">
           <div className="grid grid-cols-[repeat(3,auto)] grid-rows-[repeat(3,auto)] place-items-center gap-1">
-            {trick.plays.map((p) => {
+            {trick.plays.map((p, i) => {
               const won = trick.winner === p.seat;
               return (
                 <div key={p.card.id} className={`animate-deal relative flex flex-col items-center ${TRICK_POS[rel(p.seat)]}`}>
-                  <CardFace card={p.card} size="sm" className={won ? 'ring-4 ring-gold' : ''} />
+                  {i === 0 && (
+                    <span className="absolute -top-5 z-10 whitespace-nowrap rounded-full bg-gold px-1.5 text-[10px] font-bold text-night shadow">
+                      {t('led')} ▸
+                    </span>
+                  )}
+                  <CardFace card={p.card} size="sm" className={won ? 'ring-4 ring-gold' : i === 0 ? 'ring-2 ring-gold/80' : ''} />
                   {p.joker && (
                     <span className="absolute -bottom-2 rounded-full bg-night px-1.5 text-[10px] font-semibold text-gold ring-1 ring-gold/50">
                       {p.joker.mode === 'high' ? '▲' : '▼'}
@@ -307,7 +330,7 @@ export function Game({ snap, clockOffset }: { snap: RoomSnapshot; clockOffset: n
         </div>
 
         {myTurn && game.phase === 'bidding' && (
-          <BidPanel handSize={game.handSize} legal={legal} onBid={(bid) => send({ type: 'bid', bid })} />
+          <BidPanel handSize={game.handSize} bids={game.bids} legal={legal} onBid={(bid) => send({ type: 'bid', bid })} />
         )}
         {myTurn && game.phase === 'trump' && <TrumpPanel onChoose={(suit) => send({ type: 'chooseTrump', suit })} />}
       </section>
@@ -367,6 +390,9 @@ export function Game({ snap, clockOffset }: { snap: RoomSnapshot; clockOffset: n
         </div>
       )}
       {jokerCard && <JokerModal cardId={jokerCard} isLead={isLead} onPlay={send} onClose={() => setJokerCard(null)} />}
+      {lastOpen && game.lastTrick && (
+        <LastTrick trick={game.lastTrick} game={game} mySeat={mySeat} onClose={() => setLastOpen(false)} />
+      )}
       {scoresOpen && <Scoresheet game={game} mySeat={mySeat} onClose={() => setScoresOpen(false)} />}
       {snap.status === 'finished' && !scoresOpen && (
         <GameOver game={game} isHost={snap.you.isHost} onScores={() => setScoresOpen(true)} onLeave={leave} />
